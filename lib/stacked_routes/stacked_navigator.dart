@@ -30,7 +30,9 @@ class PageRoutes {
 ///
 /// The solution would be to have a stacked navigator that we can just say push this set of pages in order.
 ///
-/// In pages that are marked with the DynamicRouteParticipator mixin.
+/// Instructions:
+///
+/// _In pages that are marked with the DynamicRouteParticipator mixin._
 ///
 /// Somewhere in the page right before AddressPage
 ///
@@ -53,11 +55,10 @@ class PageRoutes {
 ///
 
 //TODO also added a mechanism for passing information
-//TODO check for pages with the mixin only
 // TODO detect through the passed props if we are doing things through StackedRoutesNavigator not just using Navigator directly.
-// TODO annotation for @isStackLoadedRequired
-// TODO tests
-class StackedRoutesNavigator {
+// TODO problem: instead of using indices, we should be finding out which page to push based on the current page. But if that's not possible, try putting this StackedRoutesNavigator in the routesObserver in MaterialPage
+// TODO maybe make this a mixin?
+class StackedRoutesNavigator extends NavigatorObserver {
   static List<PageRoutes> _pageStates = [];
   static int _currentPageIndex = -1;
 
@@ -145,6 +146,9 @@ class StackedRoutesNavigator {
     _currentPageIndex++;
   }
 
+  /// Push the first page in the stack
+  ///
+  /// This is called in the page before the first page included in the navigation stack.
   static void pushFirst(BuildContext context) {
     assert(_isStackLoaded,
         "the loadStack() method should be called first before this can be used.");
@@ -164,6 +168,24 @@ class StackedRoutesNavigator {
 
     Navigator.pop(context);
   }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (_isStackLoaded) {
+      _currentPageIndex--;
+    }
+  }
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+
+    if (_isStackLoaded) {
+      _currentPageIndex++;
+    }
+  }
 }
 
+/// For pages that are to be navigated with the StackedNavigator -- pages that gets put in the array
 mixin DynamicRouteParticipator {}

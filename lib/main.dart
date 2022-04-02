@@ -1,4 +1,9 @@
 import 'package:dynamic_routing/pages/page1.dart';
+import 'package:dynamic_routing/pages/page2.dart';
+import 'package:dynamic_routing/pages/page3.dart';
+import 'package:dynamic_routing/pages/page4.dart';
+import 'package:dynamic_routing/pages/page5.dart';
+import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -41,9 +46,16 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(16),
         child: TextButton(
           child: const Text("Enter flow"),
-          onPressed: () => {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => const Page1()))
+          onPressed: () {
+            StackedRoutesNavigator.loadStack([
+              const Page1(),
+              const Page2(),
+              const Page3(),
+              const Page4(),
+              const Page5()
+            ]);
+
+            StackedRoutesNavigator.pushFirst(context);
           },
         ),
       ),

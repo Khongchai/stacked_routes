@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../stacked_routes/stacked_navigator.dart';
+
 mixin TestPage<T extends StatefulWidget> on State<T> {
   @override
   Widget build(BuildContext context) {
@@ -8,7 +10,7 @@ mixin TestPage<T extends StatefulWidget> on State<T> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
-          onPressed: onNextPressed(),
+          onPressed: () => StackedRoutesNavigator.pushNext(context),
           child: const Text("Next Page"),
         ),
       ),
@@ -17,5 +19,4 @@ mixin TestPage<T extends StatefulWidget> on State<T> {
 
   String pageTitle();
 
-  VoidCallback onNextPressed() => () {};
 }
