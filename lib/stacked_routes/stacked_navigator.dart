@@ -60,6 +60,8 @@ class PageRoutes {
 class StackedRoutesNavigator {
   static List<PageRoutes> _pageStates = [];
   static int _currentPageIndex = -1;
+
+  /// Use as a safeguard to prevent this being used before the states are loaded.
   static bool _isStackLoaded = false;
 
   StackedRoutesNavigator._();
@@ -83,17 +85,29 @@ class StackedRoutesNavigator {
     _currentPageIndex = -1;
   }
 
-  static loadStack(List<Widget> pages) {
+  /// Can pass as an optional parameter whether or not to be strict about pages that get loaded onto the navigation stack.
+  ///
+  /// If true(default value), pages that can participate will have to use the DynamicRouteParticipator mixin.
+  /// else, this restriction will be lifted (not recommended).
+  static loadStack(List<Widget> pages, {bool strict = true}) {
     _isStackLoaded = true;
-    _pageStates = _generatePageStates(pages: pages);
+    _pageStates = _generatePageStates(pages: pages, strict: strict);
   }
 
-  static List<PageRoutes> _generatePageStates({required List<Widget> pages}) {
+  static List<PageRoutes> _generatePageStates(
+      {required List<Widget> pages, required bool strict}) {
     final List<PageRoutes> pageStates = [];
     for (int i = 0; i < pages.length; i++) {
       final previousPage = i - 1 < 0 ? null : pages[i - 1];
       final nextPage = i + 1 >= pages.length ? null : pages[i + 1];
       final currentPage = pages[i];
+
+      final pageIsMarkedForDynamicRouting =
+          currentPage is DynamicRouteParticipator;
+      final strictModeOff = !strict;
+
+      assert(pageIsMarkedForDynamicRouting || strictModeOff,
+          "Strict mode is on, only use pages that use the DynamicRouteParticipator mixin");
 
       final currentPageStates = PageRoutes(
           previousRoute: _generateRoute(previousPage),
