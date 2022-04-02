@@ -1,4 +1,5 @@
 import 'package:dynamic_routing/pages/page_mixin.dart';
+import 'package:dynamic_routing/stacked_routes/stacked_navigator.dart';
 import "package:flutter/material.dart";
 
 class Page1 extends StatefulWidget {
@@ -8,7 +9,7 @@ class Page1 extends StatefulWidget {
   State<Page1> createState() => _Page1State();
 }
 
-class _Page1State extends State<Page1> with TestPage {
+class _Page1State extends State<Page1> with TestPage, DynamicRouteParticipator {
   @override
   String pageTitle() {
     return "Page 1";

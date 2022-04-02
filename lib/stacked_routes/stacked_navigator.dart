@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PageStates {
@@ -29,7 +28,7 @@ class PageStates {
 ///
 /// ```dart
 ///
-///   const routes = StackedNavigator(pages: [AddressPage, OccupationPage, XPage, XXPage]);
+///   StackedNavigator.loadStack([AddressPage, OccupationPage, XPage, XXPage]);
 ///
 ///```
 ///
@@ -40,32 +39,43 @@ class PageStates {
 ///
 /// Somewhere in OccupationPage
 /// ```dart
-///   StackedNavigator.pushNext(context);
+///   StackedRoutesNavigator.pushNext(context);
 ///   //or
-///   StackedNavigator.popCurrent(context);
+///   StackedRoutesNavigator.popCurrent(context);
 /// ```
 ///
 
 //TODO also added a mechanism for passing information
-//TODO clear stack
 //TODO check for pages with the mixin only
-// TODO detect through the passed props if we are doing things through StackedNavigator not just using Navigator directly.
+// TODO detect through the passed props if we are doing things through StackedRoutesNavigator not just using Navigator directly.
+// TODO annotation for @isStackLoadedRequired
 // TODO tests
-class StackedNavigator {
-  List<PageStates> _pageStates = [];
-  int _currentPageIndex = 0;
+class StackedRoutesNavigator {
+  static List<PageStates> _pageStates = [];
+  static int _currentPageIndex = 0;
+  static bool _isStackLoaded = false;
 
-  StackedNavigator({
-    required List<Widget> pages,
-  }) {
-    _pageStates = _generatePageStates(pages: pages);
-  }
+  StackedRoutesNavigator._();
 
-  List<Route> getCurrentPageStack() {
+  static List<Route> getCurrentRouteStack() {
     return _pageStates.map((e) => e.currentPage).toList();
   }
 
-  List<PageStates> _generatePageStates({required List<Widget> pages}) {
+  static Route getCurrentRoute() {
+    return _pageStates[_currentPageIndex].currentPage;
+  }
+
+  static clearStack() {
+    _isStackLoaded = false;
+    _pageStates = [];
+  }
+
+  static loadStack(List<Widget> pages) {
+    _isStackLoaded = true;
+    _pageStates = _generatePageStates(pages: pages);
+  }
+
+  static List<PageStates> _generatePageStates({required List<Widget> pages}) {
     final List<PageStates> pageStates = [];
     for (int i = 0; i < pages.length; i++) {
       final previousPage = i - 1 < 0 ? null : pages[i - 1];
@@ -83,20 +93,22 @@ class StackedNavigator {
     return pageStates;
   }
 
-  Route? _generateRoute(Widget? page) {
+  static Route? _generateRoute(Widget? page) {
     if (page == null) return null;
 
     return MaterialPageRoute(builder: (context) => page);
   }
 
   /// Push the next page in the stack
-  void pushNext(BuildContext context) {
+  static void pushNext(BuildContext context) {
     final currentPage = _pageStates[_currentPageIndex];
 
     assert(
         !currentPage.isLastPage(),
         "There are no more pages to push. This is the end of the flow. "
         "From this page onward, use the Navigator class instead");
+    assert(_isStackLoaded,
+        "the loadStack() method should be called first before this can be used.");
 
     Navigator.of(context).push(currentPage.nextPage!);
 
@@ -104,7 +116,10 @@ class StackedNavigator {
   }
 
   /// Pop the current page from the stack
-  void popCurrent(BuildContext context) {
+  static void popCurrent(BuildContext context) {
+    assert(_isStackLoaded,
+        "the loadStack() method should be called first before this can be used.");
+
     _currentPageIndex = max(0, _currentPageIndex - 1);
 
     Navigator.pop(context);
